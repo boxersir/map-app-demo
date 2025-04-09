@@ -23,7 +23,12 @@ const MapComponent = () => {
       style: 'mapbox://styles/mapbox/streets-v11',
       center: [-74.5, 40], // 初始中心点坐标
         zoom: 9, // 初始缩放级别
-      projection: 'globe' // 坐标系
+      projection: 'globe', // 坐标系
+      config: {
+        basemap: {
+          lightPreset:'night'
+        }
+      }
     });
 
     // 添加控制条
@@ -42,21 +47,21 @@ const MapComponent = () => {
         'maxzoom': 14
         });
         map.addControl(new mapboxgl.FullscreenControl());
-map.addControl(new mapboxgl.GeolocateControl({
-    positionOptions: {
-        enableHighAccuracy: true
-    },
-    trackUserLocation: true
-}));
-map.addControl(new mapboxgl.ScaleControl({
-    maxWidth: 200,
-    unit: 'metric'
-}), 'bottom-left');
-map.addControl(new MapboxGeocoder({
-    accessToken: mapboxgl.accessToken,
-    mapboxgl: mapboxgl
-}), 'top-left');
-map.addControl(new mapboxgl.NavigationControl(), 'top-left');
+        map.addControl(new mapboxgl.GeolocateControl({
+            positionOptions: {
+                enableHighAccuracy: true
+            },
+            trackUserLocation: true
+        }));
+        map.addControl(new mapboxgl.ScaleControl({
+            maxWidth: 200,
+            unit: 'metric'
+        }), 'bottom-left');
+        map.addControl(new MapboxGeocoder({
+            accessToken: mapboxgl.accessToken,
+            mapboxgl: mapboxgl
+        }), 'top-left');
+        map.addControl(new mapboxgl.NavigationControl(), 'top-left');
 
         map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
     });
