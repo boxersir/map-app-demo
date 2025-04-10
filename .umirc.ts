@@ -20,6 +20,11 @@ export default defineConfig({
       component: './Home',
     },
     {
+      name: '轨迹',
+      path: '/track',
+      component: './Track',
+    },
+    {
       name: '权限演示',
       path: '/access',
       component: './Access',
