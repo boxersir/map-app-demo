@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { useLoader } from '@react-three/fiber'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import TWEEN from '@tweenjs/tween.js';
 // import { useGLTF } from '@react-three/drei'
 const motorcycleIconUrl = 'https://cdn-icons-png.flaticon.com/512/2972/2972185.png';
 
@@ -57,9 +58,15 @@ function init3DModel() {
         '/submarine1.glb', // 替换为你的摩托车模型URL
         // 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF/Duck.gltf', // 替换为你的摩托车模型URL
         function (gltf) {
+            debugger
             motorcycle = gltf.scene;
             motorcycle.scale.set(1, 1, 1);
-            const lookAtPoint = new THREE.Vector3(-100, 2, -150);
+            // const lookAtPoint = new THREE.Vector3(-500, 200, 100); // 旋转到摩托车正前方
+            // 使用向量操作 将潜水艇头朝向西偏20度 
+            const lookAtPoint = new THREE.Vector3(0, 0, 0);
+            // const westVector = new THREE.Vector3(-1, 0, 0);
+            // westVector.rotateX(Math.PI * 20 / 180); // 旋转20度
+            lookAtPoint.angleTo(20);
             motorcycle.lookAt(lookAtPoint);
             scene.add(motorcycle);
             animateModel();
@@ -75,6 +82,10 @@ function animateModel() {
     requestAnimationFrame(animateModel);
     if (motorcycle) {
         // motorcycle.rotation.y += 0.01; // 轻微旋转效果
+        motorcycle.rotation.y = 1000 + Math.sin(Date.now() * 0.001) * 0.1;
+        // 螺旋桨旋转每秒旋转10度
+        const rotor = motorcycle.getObjectByName('propeller_mesh')
+        rotor.rotation.y += 10;
     }
     controls.update(); // 必须在动画循环中更新
     renderer.render(scene, camera);
