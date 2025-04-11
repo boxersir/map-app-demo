@@ -1,6 +1,6 @@
 import { PageContainer } from '@ant-design/pro-components';
 import { Button } from 'antd';
-import MarkMap from  '@/components/MarkMap/RealLine';
+import MarkMap from  '@/components/MarkMap/ThreeMap';
 
 const TrackPage: React.FC = () => {
   return (

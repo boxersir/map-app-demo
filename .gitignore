@@ -11,5 +11,5 @@
 /dist
 /.mfsu
 .swc
-.gltf
-.glb
+*.gltf
+*.glb

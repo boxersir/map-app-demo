@@ -8,6 +8,7 @@ const motorcycleIconUrl = 'https://cdn-icons-png.flaticon.com/512/2972/2972185.p
 // 路线坐标点数组
 let routeCoordinates = [];
 let motorcycleAnimationId = null;
+let lastBearing = 0; // 用于平滑角度变化
 
 // 替换为你的 Mapbox Access Token
 const MapComponent = () => {
@@ -60,6 +61,21 @@ const MapComponent = () => {
             maxZoom: 15
         });
     }
+    // 新增的角度计算函数
+    function calculateBearing(current, next) {
+        // 计算两点之间的角度
+        const dx = next[0] - current[0];
+        const dy = next[1] - current[1];
+        
+        // 计算角度（弧度），从正东方向开始，逆时针方向
+        const angleRad = Math.atan2(dy, dx);
+        
+        // 转换为角度（0-360度）
+        const angleDeg = angleRad * 180 / Math.PI;
+        
+        // 确保角度在0-360范围内
+        return (angleDeg + 360) % 360;
+    }
     // 动画摩托车沿路线移动
     function animateMotorcycle() {
         const startTime = Date.now();
@@ -80,19 +96,29 @@ const MapComponent = () => {
             // 计算沿路线行进的距离
             const alongDistance = progress * routeLength;
             const along = turf.along(line, alongDistance, {units: 'kilometers'});
-            const currentLng = along.geometry.coordinates[0];
-            const currentLat = along.geometry.coordinates[1];
+            // const currentLng = along.geometry.coordinates[0];
+            // const currentLat = along.geometry.coordinates[1];
+            const currentPoint = along.geometry.coordinates;
             
             // 计算方向角度 - 使用当前位置和前方一小段距离的点来计算
-            let bearing = 0;
+            let bearing = lastBearing;
             if (progress < 0.99) {
+                debugger
                 const nextAlong = turf.along(line, alongDistance + 0.01, {units: 'kilometers'});
-                bearing = turf.bearing(
-                    turf.point([currentLng, currentLat]),
-                    turf.point(nextAlong.geometry.coordinates)
-                );
+                // 修正角度
+                const nextPoint = nextAlong.geometry.coordinates;
+                bearing = calculateBearing(currentPoint, nextPoint)
+                // bearing = turf.bearing(
+                //     turf.point([currentLng, currentLat]),
+                //     turf.point(nextAlong.geometry.coordinates)
+                // );
+                // 平滑角度变化 - 限制最大转角速度
+                const maxAngleChange = 10; // 每帧最大变化10度
+                const angleDiff = (bearing - lastBearing + 540) % 360 - 180; // 获取最小角度差(-180到180)
+                const limitedAngleDiff = Math.max(-maxAngleChange, Math.min(maxAngleChange, angleDiff));
+                bearing = (lastBearing + limitedAngleDiff + 360) % 360;
             }
-            
+            lastBearing = bearing;
             // 更新摩托车位置和方向
             mapRef.current.getSource('motorcycle').setData({
                 type: 'FeatureCollection',
@@ -100,7 +126,8 @@ const MapComponent = () => {
                     type: 'Feature',
                     geometry: {
                         type: 'Point',
-                        coordinates: [currentLng, currentLat]
+                        coordinates: currentPoint
+                        // coordinates: [currentLng, currentLat]
                     },
                     properties: {
                         bearing: bearing
@@ -109,7 +136,8 @@ const MapComponent = () => {
             });
             
             // 让地图跟随摩托车
-            mapRef.current.setCenter([currentLng, currentLat]);
+            // mapRef.current.setCenter([currentLng, currentLat]);
+            mapRef.current.setCenter(currentPoint);
             
             // 显示速度信息
             document.getElementById('startBtn').textContent = `行驶中 ${speed.toFixed(1)} km/h`;
